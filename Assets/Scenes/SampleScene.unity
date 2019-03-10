@@ -153,7 +153,11 @@ MonoBehaviour:
   - {fileID: 409599655}
   - {fileID: 838749974}
   - {fileID: 794212770}
-  spawnCode: 13
+  vsComputer: 1
+  testCode: 113
+  dropTime: 1
+  computerThinkTime: 1
+  gameGrid: 
 --- !u!4 &158956020
 Transform:
   m_ObjectHideFlags: 0
@@ -797,7 +801,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 8c4b038c8ceba374ab4c3f029bcd8037, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.63
+      value: 0.67513263
       objectReference: {fileID: 0}
     - target: {fileID: 2300000, guid: 8c4b038c8ceba374ab4c3f029bcd8037, type: 3}
       propertyPath: m_Materials.Array.data[0]

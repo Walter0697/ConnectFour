@@ -9,25 +9,24 @@ public class GeneratePiece : MonoBehaviour
     public Transform[] spawnPosition;
 
     private bool redTurn;
+    public bool vsComputer = true;
 
-    public KeyCode spawnCode;
+    public KeyCode testCode;
     private float countdown;
     public float dropTime = 1.0f;
+    public float computerThinkTime = 1.0f;
 
     //1 for red, 2 for yellow, 0 for none
-    public int[,] gameGrid;
+    public int[] gameGrid;
 
     // Start is called before the first frame update
     void Start()
     {
         countdown = 0;
-        gameGrid = new int[7, 6];
-        for (int i = 0; i < gameGrid.Length / gameGrid.GetUpperBound(0); i++)
+        gameGrid = new int[7 * 6];
+        for (int i = 0; i < gameGrid.Length; i++)
         {
-            for (int j = 0; j < gameGrid.GetUpperBound(0); j++)
-            {
-                gameGrid[i, j] = 0;
-            }
+                gameGrid[i] = 0;
         }
         redTurn = true;
     }
@@ -38,15 +37,18 @@ public class GeneratePiece : MonoBehaviour
         countdown += Time.deltaTime;
         for (int i = 1; i < 8; i++)
         {
-            if (Input.GetKeyDown(i.ToString())) spawnChess(i - 1);
+            if (Input.GetKeyDown(i.ToString())) buttonPressed(i - 1);
         }
-        //spawnChess(Random.Range(0, 7));
+        if (vsComputer && !redTurn)
+        {
+            spawnChess(MiniMaxScript.miniMaxResult(gameGrid, 4, 2));
+        }
     }
 
     public void buttonPressed(int i)
     {
-        //if (redTurn) return;    //if red turn is computer
-        spawnChess(i);
+        if (vsComputer && redTurn)
+            spawnChess(i);
     }
 
     public void spawnChess(int index)
@@ -55,22 +57,28 @@ public class GeneratePiece : MonoBehaviour
         {
             countdown = 0;
             int chessKey = 0;
+            //get the position to insert
+            Vector2 pos = BoardUtility.insertingPosition(gameGrid, index);
+            Chess chs;
             if (redTurn)
             {
-                Chess chs = Instantiate(redChess) as Chess;
+                chs = Instantiate(redChess) as Chess;
                 chs.gameObject.transform.position = spawnPosition[index].position;
                 chessKey = 1;
             }
             else
             {
-                Chess chs = Instantiate(yellowChess) as Chess;
+                chs = Instantiate(yellowChess) as Chess;
                 chs.gameObject.transform.position = spawnPosition[index].position;
                 chessKey = 2;
             }
+            chs.x = (int)pos.x;
+            chs.y = (int)pos.y;
+
             redTurn = !redTurn;
 
             //put it into the gamegrid
-            gameGrid = BoardUtility.insertToGrid(gameGrid, index, chessKey);
+            gameGrid = BoardUtility.insertToGrid(gameGrid, pos, chessKey);
             BoardUtility.displayGrid(gameGrid);
         }
     }

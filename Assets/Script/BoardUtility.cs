@@ -16,60 +16,75 @@ public class BoardUtility : MonoBehaviour
         
     }
 
-    public static int[,] removeFromGrid(int[,] gameBoard, int x, int y)
+    public static bool isOutOfBound(int x, int y)
+    {
+        if (x < 0) return true;
+        if (y < 0) return true;
+        if (x >= 7) return true;
+        if (y >= 6) return true;
+        return false;
+    }
+
+    public static int indexOf(int x, int y)
+    {
+        return 7 * y + x;
+    }
+
+    public static int[] removeFromGrid(int[] gameBoard, int x, int y)
     {
         for (int i = y; i > 0; i--)
         {
-            gameBoard[x, i] = gameBoard[x, i - 1];
+            gameBoard[indexOf(x, i)] = gameBoard[indexOf(x, i - 1)];
         }
-        gameBoard[x, 0] = 0;
+        gameBoard[indexOf(x, 0)] = 0;
         return gameBoard;
     }
 
-    public static int[,] copyGameGrid(int[,] gameBoard)
+    public static int[] copyGameGrid(int[] gameBoard)
     {
-        int[,] newGrid = new int[7, 6];
-        for (int i = 0; i < newGrid.Length / newGrid.GetUpperBound(0); i++)
+        int[] newGrid = new int[7 * 6];
+        for (int i = 0; i < 7 * 6; i++)
         {
-            for (int j = 0; j < newGrid.GetUpperBound(0); j++)
-            {
-                newGrid[i, j] = gameBoard[i, j];
-            }
+            newGrid[i] = gameBoard[i];
         }
         return newGrid;
     }
 
-    public static bool canInsert(int[,] gameBoard, int index)
+
+    public static bool canInsert(int[] gameBoard, int index)
     {
-        return gameBoard[index, 0] == 0;
+        return gameBoard[indexOf(index, 0)] == 0;
     }
 
-    public static void displayGrid(int[,] gameBoard)
+    public static void displayGrid(int[] gameBoard)
     {
-        for (int i = 0; i < gameBoard.Length / gameBoard.GetUpperBound(0); i++)
+        for (int i = 0; i < 6; i++)
         {
             string output = "";
-            for (int j = 0; j < gameBoard.GetUpperBound(0); j++)
+            for (int j = 0; j < 7; j++)
             {
-                output = output + "[" + gameBoard[i, j] + "]";
+                output = output + "[" + gameBoard[indexOf(j, i)] + "]";
             }
             Debug.Log(output);
         }
+        Debug.Log("*****************");
     }
 
-    public static int[,] insertToGrid(int[,] gameBoard, int index, int chesskey)
+    public static Vector2 insertingPosition(int[] gameBoard, int index)
     {
-        bool inserted = false;
-        for (int i = 1; i < gameBoard.GetUpperBound(0); i++)
+        for (int i = 1; i < 6; i++)
         {
-            if (gameBoard[index, i] != 0)
+            if (gameBoard[indexOf(index, i)] != 0)
             {
-                gameBoard[index, i - 1] = chesskey;
-                inserted = true;
-                break;
+                return new Vector2(index, i - 1);
             }
         }
-        if (!inserted) gameBoard[index, 5] = chesskey;
+        return new Vector2(index, 5);
+    }
+
+    public static int[] insertToGrid(int[] gameBoard, Vector2 pos, int chesskey)
+    {
+        gameBoard[indexOf((int)pos.x, (int)pos.y)] = chesskey;
         return gameBoard;
     }
 }
