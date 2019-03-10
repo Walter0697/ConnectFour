@@ -30,6 +30,11 @@ public class BoardUtility : MonoBehaviour
         return 7 * y + x;
     }
 
+    public static bool canRemove(int[] gameBoard, int index, int playerKey)
+    {
+        return gameBoard[indexOf(index, 5)] == playerKey;
+    }
+
     public static int[] removeFromGrid(int[] gameBoard, int x, int y)
     {
         for (int i = y; i > 0; i--)

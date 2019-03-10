@@ -39,7 +39,7 @@ public class MiniMaxScript : MonoBehaviour
         return numOfConnect(gameGrid, key, 4) * 10000 +
                numOfConnect(gameGrid, key, 3) * 50 +
                numOfConnect(gameGrid, key, 2) * 2 -
-               numOfConnect(gameGrid, (key + 1) % 2, 4) * 50000 -
+               numOfConnect(gameGrid, (key + 1) % 2, 4) * 80000 -
                numOfConnect(gameGrid, (key + 1) % 2, 3) * 100 -
                numOfConnect(gameGrid, (key + 1) % 2, 2) * 5;
     }
@@ -61,12 +61,17 @@ public class MiniMaxScript : MonoBehaviour
         return returnNum;
     }
 
-    public static int miniMaxResult(int[] gameGrid, int depth, int playerKey)
+    public static int miniMaxResultWithRemove(int[] gameGrid, int depth, int playerKey)
     {
-        return minimax(gameGrid, depth, true, playerKey, -1).index;
+        return minimaxWithRemove(gameGrid, depth, -9999999, 9999999, true, playerKey, -1).index;
     }
 
-    public static Node minimax(int[] gameGrid, int depth, bool maximizingPlayer, int playerKey, int index)
+    public static int miniMaxResult(int[] gameGrid, int depth, int playerKey)
+    {
+        return minimax(gameGrid, depth, -9999999, 9999999, true, playerKey, -1).index;
+    }
+
+    public static Node minimax(int[] gameGrid, int depth, int alpha, int beta, bool maximizingPlayer, int playerKey, int index)
     {
 
         if (depth == 0)
@@ -88,22 +93,15 @@ public class MiniMaxScript : MonoBehaviour
                     if (!BoardUtility.canInsert(gameGrid, i)) break;
                     int[] newGrid = BoardUtility.copyGameGrid(gameGrid);
                     BoardUtility.insertToGrid(newGrid, BoardUtility.insertingPosition(newGrid, i), playerKey);
-                    Node n1 = minimax(newGrid, depth - 1, false, playerKey, i);
-                    if (n1.value > n.value)
+                    Node n1 = minimax(newGrid, depth - 1, alpha, beta, false, playerKey, i);
+                    if (n1.value >= n.value)
                     {
                         n = n1;
                         j = i;
                     }
-                    else if (n1.value == n.value)
-                    {
-                        if (Random.Range(0, 2) == 1)
-                        {
-                            n = n1;
-                            j = i;
-                        }
-                    }
+                    if (n1.value >= alpha) alpha = n1.value;
+                    if (beta <= alpha) break;
                 }
-                //n.value = heristic1(gameGrid, playerKey) - heristic1(gameGrid, (playerKey + 1) % 2);
                 n.index = j;
                 return n;
             }
@@ -118,25 +116,89 @@ public class MiniMaxScript : MonoBehaviour
                     if (!BoardUtility.canInsert(gameGrid, i)) break;
                     int[] newGrid = BoardUtility.copyGameGrid(gameGrid);
                     BoardUtility.insertToGrid(newGrid, BoardUtility.insertingPosition(newGrid, i), key);
-                    Node n1 = minimax(newGrid, depth - 1, true, playerKey, i);
-                    if (n1.value < n.value)
+                    Node n1 = minimax(newGrid, depth - 1, alpha, beta, true, playerKey, i);
+                    if (n1.value <= n.value)
                     {
                         n = n1;
                         j = i;
                     }
-                    else if (n1.value == n.value)
-                    {
-                        if (Random.Range(0, 2) == 1)
-                        { 
-                            n = n1;
-                            j = i;
-                        }
-                    }
+                    if (beta >= n1.value) beta = n1.value;
+                    if (beta <= alpha) break;
                 }
-                //n.value = heristic1(gameGrid, playerKey) - heristic1(gameGrid, (playerKey + 1) % 2);
                 n.index = j;
                 return n;
             }
         }
     }
+
+    public static Node minimaxWithRemove(int[] gameGrid, int depth, int alpha, int beta, bool maximizingPlayer, int playerKey, int index)
+    {
+
+        if (depth == 0)
+        {
+            Node n = new Node();
+            n.value = heristic1(gameGrid, playerKey);
+            n.index = index;
+            return n;
+        }
+        else
+        {
+            if (maximizingPlayer)
+            {
+                Node n = new Node();
+                n.value = -9999999;
+                int j = -1;
+                for (int i = 0; i < 14; i++)
+                {
+                    if (i < 7 && !BoardUtility.canInsert(gameGrid, i)) break;
+                    else if (i >= 7 && !BoardUtility.canRemove(gameGrid, i - 7, playerKey)) break;
+
+                    int[] newGrid = BoardUtility.copyGameGrid(gameGrid);
+
+                    if (i < 7) BoardUtility.insertToGrid(newGrid, BoardUtility.insertingPosition(newGrid, i), playerKey);
+                    else BoardUtility.removeFromGrid(newGrid, i - 7, 5);
+
+                    Node n1 = minimax(newGrid, depth - 1, alpha, beta, false, playerKey, i);
+                    if (n1.value >= n.value)
+                    {
+                        n = n1;
+                        j = i;
+                    }
+                    if (n1.value >= alpha) alpha = n1.value;
+                    if (beta <= alpha) break;
+                }
+                n.index = j;
+                return n;
+            }
+            else
+            {
+                Node n = new Node();
+                n.value = 99999999;
+                int key = (playerKey + 1) % 2;
+                int j = -1;
+                for (int i = 0; i < 7; i++)
+                {
+                    if (i < 7 && !BoardUtility.canInsert(gameGrid, i)) break;
+                    else if (i >= 7 && !BoardUtility.canRemove(gameGrid, i - 7, key)) break;
+
+                    int[] newGrid = BoardUtility.copyGameGrid(gameGrid);
+
+                    if (i < 7) BoardUtility.insertToGrid(newGrid, BoardUtility.insertingPosition(newGrid, i), key);
+                    else BoardUtility.removeFromGrid(newGrid, i - 7, 5);
+
+                    Node n1 = minimax(newGrid, depth - 1, alpha, beta, true, playerKey, i);
+                    if (n1.value <= n.value)
+                    {
+                        n = n1;
+                        j = i;
+                    }
+                    if (beta >= n1.value) beta = n1.value;
+                    if (beta <= alpha) break;
+                }
+                n.index = j;
+                return n;
+            }
+        }
+    }
+
 }
