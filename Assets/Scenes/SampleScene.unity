@@ -156,10 +156,12 @@ MonoBehaviour:
   all_chess: []
   vsComputer: 1
   allowRemove: 1
-  testCode: 113
+  isRandomPlayer: 1
   removeCode: 71000000770000006500000072000000740000007900000075000000
   dropTime: 1
-  computerThinkTime: 1
+  computerThinkTime: 2
+  heuristic: 2
+  depth: 7
   gameGrid: 
 --- !u!4 &158956020
 Transform:
@@ -310,6 +312,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3228519947192711811, guid: 13789856cf1d3134fa8ef0abc6a8a83b,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.74
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 13789856cf1d3134fa8ef0abc6a8a83b, type: 3}

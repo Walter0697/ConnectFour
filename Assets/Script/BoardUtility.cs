@@ -30,6 +30,27 @@ public class BoardUtility : MonoBehaviour
         return 7 * y + x;
     }
 
+    public static int numOfRemove(int[] gameBoard, int playerKey)
+    {
+        int num = 0;
+        for (int i = 0; i < 7; i++)
+        {
+            if (canRemove(gameBoard, i, playerKey)) num++;
+        }
+        return num;
+    }
+
+    public static int getIndexOfRemove(int[] gameBoard, int index, int playerKey)
+    {
+        int counter = -1;
+        for (int i = 0; i < 7; i++)
+        {
+            if (canRemove(gameBoard, i, playerKey)) counter++;
+            if (counter == index - 7) return counter;
+        }
+        return -1;
+    }
+
     public static bool canRemove(int[] gameBoard, int index, int playerKey)
     {
         return gameBoard[indexOf(index, 5)] == playerKey;

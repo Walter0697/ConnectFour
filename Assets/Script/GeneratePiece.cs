@@ -7,19 +7,24 @@ public class GeneratePiece : MonoBehaviour
     public Chess redChess;
     public Chess yellowChess;
     public Transform[] spawnPosition;
+    [HideInInspector]
     public List<Chess> all_chess;
 
     private bool redTurn;
     public bool vsComputer = true;
     public bool allowRemove = true;
+    public bool isRandomPlayer = false;
 
-    public KeyCode testCode;
+    [HideInInspector]
     public KeyCode[] removeCode = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y, KeyCode.U };
     private float countdown;
     public float dropTime = 1.0f;
-    public float computerThinkTime = 1.0f;
+    public float computerThinkTime = 2.0f;
+    public int heuristic = 1;
+    public int depth = 5;
 
     //1 for red, 2 for yellow, 0 for none
+    [HideInInspector]
     public int[] gameGrid;
 
     // Start is called before the first frame update
@@ -39,32 +44,51 @@ public class GeneratePiece : MonoBehaviour
     void Update()
     {
         countdown += Time.deltaTime;
-        for (int i = 1; i < 8; i++)
+        //player move
+        //only usable when player is allowed to move
+        if (!isRandomPlayer)
         {
-            if (Input.GetKeyDown(i.ToString())) buttonPressed(i - 1);
-        }
-        for (int i = 0; i < 7; i++)
-        {
-            if (allowRemove)
+            for (int i = 1; i < 8; i++)
             {
-                if (Input.GetKeyDown(removeCode[i])) removeButtonPressed(i);
+                if (Input.GetKeyDown(i.ToString())) buttonPressed(i - 1);
             }
-            else
-                break;
-
+            for (int i = 0; i < 7; i++)
+            {
+                if (allowRemove)
+                {
+                    if (Input.GetKeyDown(removeCode[i])) removeButtonPressed(i);
+                }
+                else
+                    break;
+            }
+        }
+        //if the first player is also a computer but with only random move
+        if (isRandomPlayer && redTurn)
+        {
+            if (countdown >= computerThinkTime)
+            {
+                int move = MiniMaxScript.randomMove(gameGrid, 1, allowRemove);
+                if (move < 7) spawnChess(move);
+                else removeChess(BoardUtility.getIndexOfRemove(gameGrid, move, 1));
+            }
         }
 
+        //if vsComputer
         if (vsComputer && !redTurn)
         {
-            //set minimax to also allow remove
-            if (allowRemove)
+            if (countdown >= computerThinkTime)
             {
-                int num = MiniMaxScript.miniMaxResultWithRemove(gameGrid, 5, 2);
-                if (num < 7) spawnChess(num);
-                else removeChess(num - 7);
+                //set minimax to also allow remove
+                if (allowRemove)
+                {
+                    //gameGrid, depth, playerKey, heristic
+                    int num = MiniMaxScript.miniMaxResultWithRemove(gameGrid, depth, 2, heuristic);
+                    if (num < 7) spawnChess(num);
+                    else removeChess(num - 7);
+                }
+                else
+                    spawnChess(MiniMaxScript.miniMaxResult(gameGrid, depth, 2, heuristic));
             }
-            else
-                spawnChess(MiniMaxScript.miniMaxResult(gameGrid, 5, 2));
         }
     }
 
