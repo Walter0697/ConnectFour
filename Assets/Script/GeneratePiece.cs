@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class GeneratePiece : MonoBehaviour
 {
+    public enum InputChoice
+    {
+        Player,
+        Random,
+        HeuristicOne,
+        HeuristicTwo
+    };
+
     public Chess redChess;
     public Chess yellowChess;
     public Transform[] spawnPosition;
@@ -11,16 +19,15 @@ public class GeneratePiece : MonoBehaviour
     public List<Chess> all_chess;
 
     private bool redTurn;
-    public bool vsComputer = true;
+    public InputChoice player1 = InputChoice.Player;
+    public InputChoice player2 = InputChoice.HeuristicOne;
     public bool allowRemove = true;
-    public bool isRandomPlayer = false;
 
     [HideInInspector]
     public KeyCode[] removeCode = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y, KeyCode.U };
     private float countdown;
     public float dropTime = 1.0f;
     public float computerThinkTime = 2.0f;
-    public int heuristic = 1;
     public int depth = 5;
 
     //1 for red, 2 for yellow, 0 for none
@@ -46,7 +53,7 @@ public class GeneratePiece : MonoBehaviour
         countdown += Time.deltaTime;
         //player move
         //only usable when player is allowed to move
-        if (!isRandomPlayer)
+        if ((player1 == InputChoice.Player && redTurn) || (player2 == InputChoice.Player && !redTurn))
         {
             for (int i = 1; i < 8; i++)
             {
@@ -63,7 +70,7 @@ public class GeneratePiece : MonoBehaviour
             }
         }
         //if the first player is also a computer but with only random move
-        if (isRandomPlayer && redTurn)
+        if ((player1 == InputChoice.Random && redTurn) || (player2 == InputChoice.Random && !redTurn))
         {
             if (countdown >= computerThinkTime)
             {
@@ -74,38 +81,45 @@ public class GeneratePiece : MonoBehaviour
         }
 
         //if vsComputer
-        if (vsComputer && !redTurn)
+        if ((player1 == InputChoice.HeuristicOne && redTurn) || (player2 == InputChoice.HeuristicOne && !redTurn) ||
+            (player1 == InputChoice.HeuristicTwo && redTurn) || (player2 == InputChoice.HeuristicTwo && !redTurn))
         {
+            int heuristic;
+            int player;
+            if (player1 == InputChoice.HeuristicOne && redTurn) { heuristic = 1; player = 1; }
+            else if (player1 == InputChoice.HeuristicOne && !redTurn) { heuristic = 1; player = 2; }
+            else if (player1 == InputChoice.HeuristicTwo && redTurn) { heuristic = 2; player = 1; }
+            else { heuristic = 2; player = 2; }
             if (countdown >= computerThinkTime)
             {
                 //set minimax to also allow remove
                 if (allowRemove)
                 {
                     //gameGrid, depth, playerKey, heristic
-                    int num = MiniMaxScript.miniMaxResultWithRemove(gameGrid, depth, 2, heuristic);
+                    int num = MiniMaxScript.miniMaxResultWithRemove(gameGrid, depth, player, heuristic);
                     if (num < 7) spawnChess(num);
                     else removeChess(num - 7);
                 }
                 else
-                    spawnChess(MiniMaxScript.miniMaxResult(gameGrid, depth, 2, heuristic));
+                    spawnChess(MiniMaxScript.miniMaxResult(gameGrid, depth, player, heuristic));
             }
         }
     }
 
     public void removeButtonPressed(int i)
     {
-        if (vsComputer && redTurn)
+        if (player1 == InputChoice.Player && redTurn)
             removeChess(i);
-        else if (!vsComputer)
+        else if (player2 == InputChoice.Player && !redTurn)
             removeChess(i);
     }
 
     public void buttonPressed(int i)
     {
-        if (vsComputer && redTurn)
+        if (player1 == InputChoice.Player && redTurn)
             spawnChess(i);
-        else if (!vsComputer)
-            removeChess(i);
+        else if (player2 == InputChoice.Player && !redTurn)
+            spawnChess(i);
     }
 
     public void spawnChess(int index)

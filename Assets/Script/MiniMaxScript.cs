@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class MiniMaxScript : MonoBehaviour
 {
+    public static bool alphaBeta = true;
+
     public struct Node
     {
         public int index;
@@ -139,13 +141,21 @@ public class MiniMaxScript : MonoBehaviour
                     int[] newGrid = BoardUtility.copyGameGrid(gameGrid);
                     BoardUtility.insertToGrid(newGrid, BoardUtility.insertingPosition(newGrid, i), playerKey);
                     Node n1 = minimax(newGrid, depth - 1, alpha, beta, false, playerKey, i, h);
-                    if (n1.value >= n.value)
+                    if (n1.value > n.value)
                     {
                         n = n1;
                         j = i;
                     }
-                    if (n1.value >= alpha) alpha = n1.value;
-                    if (beta <= alpha) break;
+                    else if (n1.value == n.value)
+                    {
+                        if (Random.Range(0, 2) == 1)
+                        {
+                            n = n1;
+                            j = i;
+                        }
+                    }
+                    if (alphaBeta && n1.value >= alpha) alpha = n1.value;
+                    if (alphaBeta && beta <= alpha) break;
                 }
                 n.index = j;
                 return n;
@@ -167,8 +177,16 @@ public class MiniMaxScript : MonoBehaviour
                         n = n1;
                         j = i;
                     }
-                    if (beta >= n1.value) beta = n1.value;
-                    if (beta <= alpha) break;
+                    else if (n1.value == n.value)
+                    {
+                        if (Random.Range(0, 2) == 1)
+                        {
+                            n = n1;
+                            j = i;
+                        }
+                    }
+                    if (alphaBeta && beta >= n1.value) beta = n1.value;
+                    if (alphaBeta && beta <= alpha) break;
                 }
                 n.index = j;
                 return n;
@@ -209,8 +227,16 @@ public class MiniMaxScript : MonoBehaviour
                         n = n1;
                         j = i;
                     }
-                    if (n1.value >= alpha) alpha = n1.value;
-                    if (beta <= alpha) break;
+                    else if (n1.value == n.value)
+                    {
+                        if (Random.Range(0, 2) == 1)
+                        {
+                            n = n1;
+                            j = i;
+                        }
+                    }
+                    if (alphaBeta && n1.value >= alpha) alpha = n1.value;
+                    if (alphaBeta && beta <= alpha) break;
                 }
                 n.index = j;
                 return n;
@@ -237,8 +263,16 @@ public class MiniMaxScript : MonoBehaviour
                         n = n1;
                         j = i;
                     }
-                    if (beta >= n1.value) beta = n1.value;
-                    if (beta <= alpha) break;
+                    else if (n1.value == n.value)
+                    {
+                        if (Random.Range(0, 2) == 1)
+                        {
+                            n = n1;
+                            j = i;
+                        }
+                    }
+                    if (alphaBeta && beta >= n1.value) beta = n1.value;
+                    if (alphaBeta && beta <= alpha) break;
                 }
                 n.index = j;
                 return n;

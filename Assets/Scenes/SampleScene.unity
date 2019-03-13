@@ -154,14 +154,13 @@ MonoBehaviour:
   - {fileID: 838749974}
   - {fileID: 794212770}
   all_chess: []
-  vsComputer: 1
+  player1: 2
+  player2: 3
   allowRemove: 1
-  isRandomPlayer: 1
   removeCode: 71000000770000006500000072000000740000007900000075000000
   dropTime: 1
   computerThinkTime: 2
-  heuristic: 2
-  depth: 7
+  depth: 5
   gameGrid: 
 --- !u!4 &158956020
 Transform:
