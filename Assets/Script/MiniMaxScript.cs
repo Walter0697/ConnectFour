@@ -24,6 +24,7 @@ public class MiniMaxScript : MonoBehaviour
         
     }
 
+    //check if the pieces are connecting to each other in the location
     public static bool isConnect(int[] gameGrid, int key, int num, int x, int y, int dx, int dy)
     {
         for (int i = 0; i < num; i++)
@@ -36,6 +37,9 @@ public class MiniMaxScript : MonoBehaviour
         return true;
     }
 
+    //check if it is possible to connect in the location
+    //such as [x][x][ ][x]
+    //but will return false if it is for example [x][x][o][x]
     public static bool canConnect(int[] gameGrid, int key, int num, int x, int y, int dx, int dy)
     {
         int checkkey = (key + 1) % 2;
@@ -54,6 +58,7 @@ public class MiniMaxScript : MonoBehaviour
         return heristic1(gameGrid, key);
     }
 
+    //check the number of connect and and give the heuristic value
     public static int heristic1(int[] gameGrid, int key)
     {
         return numOfConnect(gameGrid, key, 4) * 10000 +
@@ -64,9 +69,11 @@ public class MiniMaxScript : MonoBehaviour
                numOfConnect(gameGrid, (key + 1) % 2, 2) * 5;
     }
 
+    //check the number of possible connection
+    //not a very good AI
     public static int heristic2(int[] gameGrid, int key)
     {
-        return numOfCanConnect(gameGrid, key, 4) * 1000 - numOfCanConnect(gameGrid, (key + 1) % 2, 4) * 2000;
+        return numOfCanConnect(gameGrid, key, 4) * 1000 - numOfCanConnect(gameGrid, (key + 1) % 2, 4) * 10000;
     }
 
     public static int numOfCanConnect(int[] gameGrid, int key, int num)
@@ -104,20 +111,23 @@ public class MiniMaxScript : MonoBehaviour
 
     public static int randomMove(int[] gameGrid, int key, bool allowRemove)
     {
-        if (!allowRemove) Random.Range(0, 7);
+        if (!allowRemove) return Random.Range(0, 7);
         return Random.Range(0, 7 + BoardUtility.numOfRemove(gameGrid, key));
     }
 
+    //return the index of the highest value from minimax algorithm
     public static int miniMaxResultWithRemove(int[] gameGrid, int depth, int playerKey, int h)
     {
         return minimaxWithRemove(gameGrid, depth, -9999999, 9999999, true, playerKey, -1, h).index;
     }
 
+    //return the index of the highest value from minimax algorithm
     public static int miniMaxResult(int[] gameGrid, int depth, int playerKey, int h)
     {
         return minimax(gameGrid, depth, -9999999, 9999999, true, playerKey, -1, h).index;
     }
 
+    //minimax algorithm that will expend its search and return the heuristic value for different result
     public static Node minimax(int[] gameGrid, int depth, int alpha, int beta, bool maximizingPlayer, int playerKey, int index, int h)
     {
 
@@ -194,6 +204,8 @@ public class MiniMaxScript : MonoBehaviour
         }
     }
 
+    //minimax algorithm that will expend its search and return the heuristic value for different result
+    //with remove option
     public static Node minimaxWithRemove(int[] gameGrid, int depth, int alpha, int beta, bool maximizingPlayer, int playerKey, int index, int h)
     {
 

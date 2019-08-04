@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GeneratePiece : MonoBehaviour
 {
+    //easier to adjust AI option
     public enum InputChoice
     {
         Player,
@@ -11,6 +12,8 @@ public class GeneratePiece : MonoBehaviour
         HeuristicOne,
         HeuristicTwo
     };
+
+    private GameControl gameControl;
 
     public Chess redChess;
     public Chess yellowChess;
@@ -37,6 +40,8 @@ public class GeneratePiece : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameControl = GetComponent<GameControl>();
+
         countdown = 0;
         gameGrid = new int[7 * 6];
         for (int i = 0; i < gameGrid.Length; i++)
@@ -50,60 +55,81 @@ public class GeneratePiece : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        countdown += Time.deltaTime;
-        //player move
-        //only usable when player is allowed to move
-        if ((player1 == InputChoice.Player && redTurn) || (player2 == InputChoice.Player && !redTurn))
+        if (gameControl.gamestate == "gameplay")
         {
-            for (int i = 1; i < 8; i++)
+            countdown += Time.deltaTime;
+            //player move
+            //only usable when player is allowed to move
+            if ((player1 == InputChoice.Player && redTurn) || (player2 == InputChoice.Player && !redTurn))
             {
-                if (Input.GetKeyDown(i.ToString())) buttonPressed(i - 1);
-            }
-            for (int i = 0; i < 7; i++)
-            {
-                if (allowRemove)
+                for (int i = 1; i < 8; i++)
                 {
-                    if (Input.GetKeyDown(removeCode[i])) removeButtonPressed(i);
+                    if (Input.GetKeyDown(i.ToString())) buttonPressed(i - 1);
                 }
-                else
-                    break;
+                for (int i = 0; i < 7; i++)
+                {
+                    if (allowRemove)
+                    {
+                        if (Input.GetKeyDown(removeCode[i])) removeButtonPressed(i);
+                    }
+                    else
+                        break;
+                }
             }
-        }
-        //if the first player is also a computer but with only random move
-        if ((player1 == InputChoice.Random && redTurn) || (player2 == InputChoice.Random && !redTurn))
-        {
-            if (countdown >= computerThinkTime)
+            //if the first player is also a computer but with only random move
+            if ((player1 == InputChoice.Random && redTurn) || (player2 == InputChoice.Random && !redTurn))
             {
-                int move = MiniMaxScript.randomMove(gameGrid, 1, allowRemove);
-                if (move < 7) spawnChess(move);
-                else removeChess(BoardUtility.getIndexOfRemove(gameGrid, move, 1));
+                if (countdown >= computerThinkTime)
+                {
+                    int move = MiniMaxScript.randomMove(gameGrid, 1, allowRemove);
+                    if (move < 7) spawnChess(move);
+                    else removeChess(BoardUtility.getIndexOfRemove(gameGrid, move, 1));
+                }
             }
-        }
 
-        //if vsComputer
-        if ((player1 == InputChoice.HeuristicOne && redTurn) || (player2 == InputChoice.HeuristicOne && !redTurn) ||
-            (player1 == InputChoice.HeuristicTwo && redTurn) || (player2 == InputChoice.HeuristicTwo && !redTurn))
-        {
-            int heuristic;
-            int player;
-            if (player1 == InputChoice.HeuristicOne && redTurn) { heuristic = 1; player = 1; }
-            else if (player1 == InputChoice.HeuristicOne && !redTurn) { heuristic = 1; player = 2; }
-            else if (player1 == InputChoice.HeuristicTwo && redTurn) { heuristic = 2; player = 1; }
-            else { heuristic = 2; player = 2; }
-            if (countdown >= computerThinkTime)
+            //if vsComputer
+            if ((player1 == InputChoice.HeuristicOne && redTurn) || (player2 == InputChoice.HeuristicOne && !redTurn) ||
+                (player1 == InputChoice.HeuristicTwo && redTurn) || (player2 == InputChoice.HeuristicTwo && !redTurn))
             {
-                //set minimax to also allow remove
-                if (allowRemove)
+                int heuristic;
+                int player;
+                //check which is current player and using which heuristic
+                if (player1 == InputChoice.HeuristicOne && redTurn) { heuristic = 1; player = 1; }
+                else if (player1 == InputChoice.HeuristicOne && !redTurn) { heuristic = 1; player = 2; }
+                else if (player1 == InputChoice.HeuristicTwo && redTurn) { heuristic = 2; player = 1; }
+                else { heuristic = 2; player = 2; }
+                if (countdown >= computerThinkTime)
                 {
-                    //gameGrid, depth, playerKey, heristic
-                    int num = MiniMaxScript.miniMaxResultWithRemove(gameGrid, depth, player, heuristic);
-                    if (num < 7) spawnChess(num);
-                    else removeChess(num - 7);
+                    //set minimax to also allow remove
+                    if (allowRemove)
+                    {
+                        //gameGrid, depth, playerKey, heristic
+                        int num = MiniMaxScript.miniMaxResultWithRemove(gameGrid, depth, player, heuristic);
+                        if (num < 7) spawnChess(num);
+                        else removeChess(num - 7);
+                    }
+                    else
+                        spawnChess(MiniMaxScript.miniMaxResult(gameGrid, depth, player, heuristic));
                 }
-                else
-                    spawnChess(MiniMaxScript.miniMaxResult(gameGrid, depth, player, heuristic));
             }
         }
+    }
+
+    public void setDifficulty(string diff)
+    {
+        if (diff == "easy")
+        {
+            player2 = InputChoice.Random;
+        }
+        else if (diff == "hard")
+        {
+            player2 = InputChoice.HeuristicOne;
+        }
+    }
+
+    public void toggleRemove()
+    {
+        allowRemove = !allowRemove;
     }
 
     public void removeButtonPressed(int i)
@@ -151,7 +177,8 @@ public class GeneratePiece : MonoBehaviour
 
             //put it into the gamegrid
             gameGrid = BoardUtility.insertToGrid(gameGrid, pos, chessKey);
-            BoardUtility.displayGrid(gameGrid);
+
+            checkWinner();
         }
     }
 
@@ -178,7 +205,37 @@ public class GeneratePiece : MonoBehaviour
 
             //remove it from the gamegrid
             gameGrid = BoardUtility.removeFromGrid(gameGrid, index, 5);
-            BoardUtility.displayGrid(gameGrid);
+
+            checkWinner();
         }
+    }
+
+    public void checkWinner()
+    {
+        int player1 = MiniMaxScript.numOfConnect(gameGrid, 1, 4);
+        int player2 = MiniMaxScript.numOfConnect(gameGrid, 2, 4);
+
+        if (player1 != 0 || player2 != 0)
+        {
+            if (player1 != 0)
+                gameControl.endGame(1);
+            else
+                gameControl.endGame(2);
+        }
+        if (BoardUtility.boardFull(gameGrid))
+        {
+            gameControl.endGame(0);
+        }
+    }
+
+    public void clearBoard()
+    {
+        while (all_chess.Count != 0)
+        {
+            Chess chs = all_chess[0];
+            all_chess.Remove(chs);
+            Destroy(chs.gameObject);
+        }
+        BoardUtility.clearBoard(gameGrid);
     }
 }
